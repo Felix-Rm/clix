@@ -3,14 +3,13 @@ if ! command -v bear &> /dev/null; then
     return 1
 fi
 
-_clix_root="$(cd -- "$(dirname -- "$0")/../.." && pwd)"
+_clix_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-${(%):-%x}}")/../.." && pwd)"
 
 source "$_clix_root/bits/buildsystem/bb.sh"
 
 bbcc() {
-   
-
     _clix_bits_buildsystem_bb_detect_all
+
     if [ -n "${_clix_bits_buildsystem_bb_active_cmd}" ]; then
         (cd "${_clix_bits_buildsystem_bb_active_dir}" && eval "${_clix_bits_buildsystem_bb_active_cmd} clean")
         if [ $? -ne 0 ]; then
