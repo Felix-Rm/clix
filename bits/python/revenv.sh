@@ -26,31 +26,38 @@ _clix_bits_python_revenv_revenv() {
         return 1
     fi
 
+    pip install --upgrade pip
+
     # Install dependencies if requirements.txt exists
     if [ -f requirements.txt ]; then
         echo "Installing dependencies from requirements.txt..."
-        pip install -r requirements.txt
+
+        if [[ " $@ " == *" -u "* ]]; then
+            pip install --force-reinstall --upgrade -r requirements.txt
+        else
+            pip install -r requirements.txt
+        fi
     fi
 
     echo "Virtual environment is now active."
 }
 
 revenv() {
-    _clix_bits_python_revenv_revenv python3
+    _clix_bits_python_revenv_revenv python3 $@
 }
 
 revenv3.10() {
-    _clix_bits_python_revenv_revenv python3.10
+    _clix_bits_python_revenv_revenv python3.10 $@
 }
 
 revenv3.11() {
-    _clix_bits_python_revenv_revenv python3.11
+    _clix_bits_python_revenv_revenv python3.11 $@
 }
 
 revenv3.12() {
-    _clix_bits_python_revenv_revenv python3.12
+    _clix_bits_python_revenv_revenv python3.12 $@
 }
 
 revenv3.13() {
-    _clix_bits_python_revenv_revenv python3.13
+    _clix_bits_python_revenv_revenv python3.13 $@
 }
