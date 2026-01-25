@@ -2,9 +2,12 @@ _clix_bits_buildsystem_bb_active_dir=""
 _clix_bits_buildsystem_bb_active_cmd=""
 
 _clix_bits_buildsystem_bb_detect() {
+    local path_prefix="$1"
+
     if command -v make &> /dev/null; then
-        if [ -f "Makefile" ]; then
+        if [ -f "${path_prefix}Makefile" ]; then
             _clix_bits_buildsystem_bb_active_cmd="make -j $(nproc)"
+            _clix_bits_buildsystem_bb_active_dir="${path_prefix}"
             return 0
         fi
     else
@@ -12,8 +15,9 @@ _clix_bits_buildsystem_bb_detect() {
     fi
 
     if command -v ninja &> /dev/null; then
-        if [ -f "build.ninja" ]; then
+        if [ -f "${path_prefix}build.ninja" ]; then
             _clix_bits_buildsystem_bb_active_cmd="ninja"
+            _clix_bits_buildsystem_bb_active_dir="${path_prefix}"
             return 0
         fi
     else
@@ -21,8 +25,9 @@ _clix_bits_buildsystem_bb_detect() {
     fi
 
     if command -v cargo &> /dev/null; then
-        if [ -f "Cargo.toml" ]; then
+        if [ -f "${path_prefix}Cargo.toml" ]; then
             _clix_bits_buildsystem_bb_active_cmd="cargo build"
+            _clix_bits_buildsystem_bb_active_dir="${path_prefix}"
             return 0
         fi
     else
@@ -32,26 +37,16 @@ _clix_bits_buildsystem_bb_detect() {
     return 1
 }
 
-_clix_bits_buildsystem_bb_detect_in() {
-    local rel_path="$1"
-
-    (
-        cd "$rel_path" 2> /dev/null || return 1
-        _clix_bits_buildsystem_bb_detect || return 1
-
-        _clix_bits_buildsystem_bb_active_dir="$rel_path"
-        return 0
-    )
-}
-
 _clix_bits_buildsystem_bb_detect_all() {
-    _clix_bits_buildsystem_bb_detect_in "." || _clix_bits_buildsystem_bb_detect_in "build" || return 1
-    return 0
+    _clix_bits_buildsystem_bb_detect "" && return 0
+    _clix_bits_buildsystem_bb_detect "build/" && return 0
+    return 1
 }
 
 bb() {
     _clix_bits_buildsystem_bb_detect_all
-    if [ -n "${_clix_bits_buildsystem_bb_active_cmd}" ]; then
+
+    if [ $? -eq 0 ]; then
         (cd "${_clix_bits_buildsystem_bb_active_dir}" && eval "${_clix_bits_buildsystem_bb_active_cmd} $@")
 
         if [ $? -eq 0 ]; then
