@@ -1,14 +1,16 @@
-if ! command -v cmake &> /dev/null; then
-    echo "CMake is not installed. Please install it and try again."
-    return 1
-fi
-
 cmake() {
+    if ! command -v cmake &> /dev/null; then
+        echo "CMake is not installed. Please install it and try again."
+        return 1
+    fi
+
     if [[ "$@" == *"--build"* || "$@" == *"--install"* ]]; then
         echo "Skipping .cmake_reconfigure generation for build/install command."
         command cmake "$@"
         return $?
     fi
+
+    set -- "$@" -DCMAKE_C_FLAGS="-fdiagnostics-color=always" -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always"
 
     echo "Running CMake with arguments: $@"
 

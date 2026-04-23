@@ -40,6 +40,7 @@ _clix_bits_buildsystem_bb_detect() {
 _clix_bits_buildsystem_bb_detect_all() {
     _clix_bits_buildsystem_bb_detect "" && return 0
     _clix_bits_buildsystem_bb_detect "build/" && return 0
+    _clix_bits_buildsystem_bb_detect "build.$(uname -m)/" && return 0
     return 1
 }
 
@@ -47,7 +48,7 @@ bb() {
     _clix_bits_buildsystem_bb_detect_all
 
     if [ $? -eq 0 ]; then
-        (cd "${_clix_bits_buildsystem_bb_active_dir}" && eval "${_clix_bits_buildsystem_bb_active_cmd} $@")
+        (cd "${_clix_bits_buildsystem_bb_active_dir}" && $_clix_bits_buildsystem_bb_active_cmd "$@")
 
         if [ $? -eq 0 ]; then
             echo "\e[32mBuild succeeded\e[0m"
