@@ -1,12 +1,15 @@
-if ! command -v python3 &> /dev/null; then
-    echo "Python 3 is not installed. Please install it and try again."
-    return 1
-fi
-
 _clix_bits_python_revenv_revenv() {
-    if ! command -v $1 &> /dev/null; then
-        echo "$1 is not installed. Please install it and try again."
+    local python_version="${1#python}"
+    shift
+
+    if ! command -v uv &> /dev/null; then
+        echo "uv is not installed. Please install it and try again."
         return 1
+    fi
+
+    if ! uv python find "$python_version" &> /dev/null; then
+        echo "Installing Python $python_version with uv..."
+        uv python install "$python_version" || return 1
     fi
 
     # Deactivate any existing virtual environment
@@ -15,7 +18,7 @@ _clix_bits_python_revenv_revenv() {
     # Check if .venv exists, if not, create it
     if [ ! -d .venv ]; then
         echo "Creating virtual environment in .venv..."
-        $1 -m venv .venv
+        uv venv --python "$python_version" .venv || return 1
     fi
 
     # Activate the virtual environment
@@ -26,16 +29,14 @@ _clix_bits_python_revenv_revenv() {
         return 1
     fi
 
-    pip install --upgrade pip
-
     # Install dependencies if requirements.txt exists
     if [ -f requirements.txt ]; then
         echo "Installing dependencies from requirements.txt..."
 
         if [[ " $@ " == *" -u "* ]]; then
-            pip install --force-reinstall --upgrade -r requirements.txt
+            uv pip install --force-reinstall --upgrade -r requirements.txt
         else
-            pip install -r requirements.txt
+            uv pip install -r requirements.txt
         fi
     fi
 
@@ -60,4 +61,8 @@ revenv3.12() {
 
 revenv3.13() {
     _clix_bits_python_revenv_revenv python3.13 $@
+}
+
+revenv3.14() {
+    _clix_bits_python_revenv_revenv python3.14 $@
 }
